@@ -19,6 +19,7 @@ function trError(msg: string) {
   if (/invalid login/i.test(msg)) return "E-posta veya şifre hatalı.";
   if (/not confirmed/i.test(msg)) return "E-posta adresiniz henüz doğrulanmadı. Gelen kutunuzu kontrol edin.";
   if (/already registered/i.test(msg)) return "Bu e-posta ile zaten kayıt var. Giriş yapın.";
+  if (/not allowed|invalid.*email/i.test(msg)) return "Bu e-posta adresi geçersiz. Lütfen gerçek bir adres girin.";
   if (/password/i.test(msg)) return "Şifre en az 6 karakter olmalı ve yeterince güçlü olmalı.";
   return msg;
 }
