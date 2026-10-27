@@ -9,4 +9,4 @@
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
 
-- Plant identification runs in a server function (src/lib/plant.functions.ts) via Lovable AI Gateway Gemini; scan history is stored in browser localStorage (no accounts needed).
+- Plant identification runs in an auth-protected server function (src/lib/plant.functions.ts) via Lovable AI Gateway Gemini; saved plants live in the Cloud `plants` table (RLS per user, thumbnails stored as data URLs), pages under src/routes/_authenticated require sign-in.
