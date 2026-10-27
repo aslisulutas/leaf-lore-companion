@@ -10,33 +10,53 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as GecmisRouteImport } from './routes/gecmis'
+import { Route as SonucIdRouteImport } from './routes/sonuc.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GecmisRoute = GecmisRouteImport.update({
+  id: '/gecmis',
+  path: '/gecmis',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SonucIdRoute = SonucIdRouteImport.update({
+  id: '/sonuc/$id',
+  path: '/sonuc/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/gecmis': typeof GecmisRoute
+  '/sonuc/$id': typeof SonucIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/gecmis': typeof GecmisRoute
+  '/sonuc/$id': typeof SonucIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/gecmis': typeof GecmisRoute
+  '/sonuc/$id': typeof SonucIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/gecmis' | '/sonuc/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/gecmis' | '/sonuc/$id'
+  id: '__root__' | '/' | '/gecmis' | '/sonuc/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  GecmisRoute: typeof GecmisRoute
+  SonucIdRoute: typeof SonucIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +68,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/gecmis': {
+      id: '/gecmis'
+      path: '/gecmis'
+      fullPath: '/gecmis'
+      preLoaderRoute: typeof GecmisRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sonuc/$id': {
+      id: '/sonuc/$id'
+      path: '/sonuc/$id'
+      fullPath: '/sonuc/$id'
+      preLoaderRoute: typeof SonucIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  GecmisRoute: GecmisRoute,
+  SonucIdRoute: SonucIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
