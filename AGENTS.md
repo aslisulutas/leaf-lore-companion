@@ -8,3 +8,5 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- Plant identification runs in a server function (src/lib/plant.functions.ts) via Lovable AI Gateway Gemini; scan history is stored in browser localStorage (no accounts needed).
