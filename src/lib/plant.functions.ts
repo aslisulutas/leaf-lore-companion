@@ -45,7 +45,7 @@ export const identifyPlant = createServerFn({ method: "POST" })
     z.object({ image: z.string().startsWith("data:image/").max(8_000_000) }).parse(input),
   )
   .handler(async ({ data }): Promise<PlantResult> => {
-    const key = process.env.LOVABLE_API_KEY;
+    const key = process.env['LOVABLE_API_KEY'];
     if (!key) throw new Error("Yapay zeka yapılandırması eksik.");
     const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
