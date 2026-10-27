@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { PlantResult } from "./plant-types";
 
 const schema = {
@@ -39,6 +40,7 @@ const prompt = `Sen uzman bir botanikçisin. Fotoğraftaki bitkiyi tanımla ve T
 Her alan 1-3 kısa cümle olsun. Fotoğrafta bitki yoksa isPlant=false yap ve diğer alanları boş bırak.`;
 
 export const identifyPlant = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((input) =>
     z.object({ image: z.string().startsWith("data:image/").max(8_000_000) }).parse(input),
   )

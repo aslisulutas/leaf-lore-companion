@@ -4,7 +4,7 @@ import { Trash2 } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { deleteItem, loadHistory, type HistoryItem } from "@/lib/plant-types";
 
-export const Route = createFileRoute("/gecmis")({
+export const Route = createFileRoute("/_authenticated/gecmis")({
   head: () => ({
     meta: [
       { title: "Geçmiş Taramalar – Yeşil Rehber" },

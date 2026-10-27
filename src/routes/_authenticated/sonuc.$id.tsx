@@ -4,7 +4,7 @@ import { AlertTriangle, Bug, Droplets, Flower2, Leaf, Scissors, Sparkles, Sprout
 import { AppShell } from "@/components/AppShell";
 import { loadHistory, type HistoryItem } from "@/lib/plant-types";
 
-export const Route = createFileRoute("/sonuc/$id")({
+export const Route = createFileRoute("/_authenticated/sonuc/$id")({
   head: () => ({
     meta: [
       { title: "Bitki Sonucu – Yeşil Rehber" },
