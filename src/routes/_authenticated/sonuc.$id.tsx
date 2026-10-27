@@ -1,8 +1,8 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { AlertTriangle, Bug, Droplets, Flower2, Leaf, Scissors, Sparkles, Sprout, Sun, Thermometer, Wind, Mountain } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
-import { loadHistory, type HistoryItem } from "@/lib/plant-types";
+import { getPlant, removePlant, type PlantRow } from "@/lib/plants-db";
 
 export const Route = createFileRoute("/_authenticated/sonuc/$id")({
   head: () => ({
@@ -18,8 +18,16 @@ export const Route = createFileRoute("/_authenticated/sonuc/$id")({
 
 function Result() {
   const { id } = Route.useParams();
-  const [item, setItem] = useState<HistoryItem | null | undefined>(undefined);
-  useEffect(() => setItem(loadHistory().find((h) => h.id === id) ?? null), [id]);
+  const [item, setItem] = useState<PlantRow | null | undefined>(undefined);
+  const navigate = useNavigate();
+  useEffect(() => {
+    getPlant(id).then(setItem).catch(() => setItem(null));
+  }, [id]);
+  async function onDelete() {
+    if (!confirm("Bu bitkiyi silmek istediğine emin misin?")) return;
+    await removePlant(id);
+    navigate({ to: "/gecmis" });
+  }
 
   if (item === undefined) return <AppShell>{null}</AppShell>;
   if (!item)
@@ -72,6 +80,9 @@ function Result() {
       <Link to="/" className="mt-8 flex items-center justify-center gap-2 rounded-2xl bg-primary py-4 font-semibold text-primary-foreground">
         <Leaf className="h-5 w-5" /> Yeni Bitki Tara
       </Link>
+      <button onClick={onDelete} className="mt-3 w-full rounded-2xl border-2 border-destructive/30 py-4 font-semibold text-destructive">
+        Bitkiyi Sil
+      </button>
     </AppShell>
   );
 }

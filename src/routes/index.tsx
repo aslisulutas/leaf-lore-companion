@@ -1,9 +1,11 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useRef, useState } from "react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useEffect, useRef, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { addPlant } from "@/lib/plants-db";
 import { Camera, ImageUp, Loader2, Sprout } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { identifyPlant } from "@/lib/plant.functions";
-import { resizeImage, saveItem } from "@/lib/plant-types";
+import { resizeImage } from "@/lib/plant-types";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -24,6 +26,12 @@ function Index() {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const navigate = useNavigate();
+  const [signedIn, setSignedIn] = useState<boolean | null>(null);
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => setSignedIn(!!data.session));
+    const { data } = supabase.auth.onAuthStateChange((_e, s) => setSignedIn(!!s));
+    return () => data.subscription.unsubscribe();
+  }, []);
 
   async function onFile(file?: File) {
     if (!file) return;
@@ -39,8 +47,7 @@ function Index() {
         return;
       }
       const thumb = await resizeImage(file, 480, 0.75);
-      const id = String(Date.now());
-      saveItem({ id, date: Date.now(), image: thumb, result });
+      const id = await addPlant(thumb, result);
       navigate({ to: "/sonuc/$id", params: { id } });
     } catch (e) {
       setError(e instanceof Error ? e.message : "Bir hata oluştu.");
@@ -59,7 +66,13 @@ function Index() {
         </p>
       </section>
 
-      {preview && (
+      {signedIn === false && (
+        <Link to="/auth" className="mt-6 flex items-center justify-center rounded-2xl bg-primary py-5 text-lg font-semibold text-primary-foreground shadow-soft">
+          Başlamak için giriş yap
+        </Link>
+      )}
+
+      {signedIn && preview && (
         <div className="relative mt-6 overflow-hidden rounded-3xl">
           <img src={preview} alt="Seçilen bitki" className="aspect-square w-full object-cover" />
           {busy && (
@@ -73,14 +86,14 @@ function Index() {
 
       {error && <p className="mt-4 rounded-2xl bg-destructive/10 p-4 text-sm text-destructive">{error}</p>}
 
-      <div className="mt-6 grid gap-3">
+      {signedIn && <div className="mt-6 grid gap-3">
         <button disabled={busy} onClick={() => cam.current?.click()} className="flex items-center justify-center gap-3 rounded-2xl bg-primary py-5 text-lg font-semibold text-primary-foreground shadow-soft transition active:scale-[0.98] disabled:opacity-60">
           <Camera className="h-6 w-6" /> Fotoğraf Çek
         </button>
         <button disabled={busy} onClick={() => gal.current?.click()} className="flex items-center justify-center gap-3 rounded-2xl border-2 border-primary/30 bg-card py-5 text-lg font-semibold text-primary transition active:scale-[0.98] disabled:opacity-60">
           <ImageUp className="h-6 w-6" /> Galeriden Yükle
         </button>
-      </div>
+      </div>}
       <input ref={cam} type="file" accept="image/*" capture="environment" hidden onChange={(e) => { onFile(e.target.files?.[0]); e.target.value = ""; }} />
       <input ref={gal} type="file" accept="image/*" hidden onChange={(e) => { onFile(e.target.files?.[0]); e.target.value = ""; }} />
     </AppShell>
