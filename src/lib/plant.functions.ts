@@ -10,6 +10,7 @@ const schema = {
     "isPlant", "commonName", "scientificName", "family", "confidence", "description",
     "watering", "light", "temperature", "humidity", "soil", "fertilizing", "pruning",
     "propagation", "toxicity", "pests", "funFact",
+    "growthTime", "bulb", "blooming", "pollen",
   ],
   properties: {
     isPlant: { type: "boolean" },
@@ -29,6 +30,10 @@ const schema = {
     toxicity: { type: "string" },
     pests: { type: "string" },
     funFact: { type: "string" },
+    growthTime: { type: "string" },
+    bulb: { type: "string" },
+    blooming: { type: "string" },
+    pollen: { type: "string" },
   },
 };
 
@@ -37,6 +42,10 @@ const promptTr = `Sen uzman bir botanikçisin. Fotoğraftaki bitkiyi tanımla ve
 - watering: sulama sıklığı ve miktarı (ör. "Haftada 1 kez, toprak kuruyunca").
 - toxicity: evcil hayvanlar ve çocuklar için zehirlilik bilgisi.
 - pests: sık görülen hastalık ve zararlılar.
+- growthTime: büyüme hızı ve olgun boyuta ulaşma süresi.
+- bulb: bitki soğanı var mı; varsa dikim ve saklama bilgisi, yoksa "Soğansız türdür." yaz.
+- blooming: çiçek açma dönemi ve çiçek özellikleri.
+- pollen: polen üretimi ve tozlaşma bilgisi; alerjen olup olmadığı.
 Her alan 1-3 kısa cümle olsun. Fotoğrafta bitki yoksa isPlant=false yap ve diğer alanları boş bırak.`;
 
 const promptEn = `You are an expert botanist. Identify the plant in the photo and fill ALL fields in ENGLISH.
@@ -44,6 +53,10 @@ const promptEn = `You are an expert botanist. Identify the plant in the photo an
 - watering: watering frequency and amount (e.g. "Once a week, when the soil dries out").
 - toxicity: toxicity information for pets and children.
 - pests: common diseases and pests.
+- growthTime: growth rate and time to reach mature size.
+- bulb: whether the plant has a bulb; if so, planting and storage info, otherwise write "This is a non-bulbous species."
+- blooming: blooming season and flower characteristics.
+- pollen: pollen production and pollination info; whether it is allergenic.
 Keep each field to 1-3 short sentences. If there is no plant in the photo, set isPlant=false and leave the other fields empty.`;
 
 export const identifyPlant = createServerFn({ method: "POST" })

@@ -16,6 +16,10 @@ export type PlantResult = {
   toxicity: string;
   pests: string;
   funFact: string;
+  growthTime: string;
+  bulb: string;
+  blooming: string;
+  pollen: string;
 };
 
 export async function resizeImage(file: File, max: number, quality = 0.85): Promise<string> {
