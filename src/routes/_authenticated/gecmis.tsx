@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Trash2 } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { listPlants, removePlant, type PlantRow } from "@/lib/plants-db";
+import { useLang } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated/gecmis")({
   head: () => ({
@@ -18,14 +19,15 @@ export const Route = createFileRoute("/_authenticated/gecmis")({
 
 function HistoryPage() {
   const [items, setItems] = useState<PlantRow[] | null>(null);
+  const { lang, t } = useLang();
   const load = () => listPlants().then(setItems).catch(() => setItems([]));
   useEffect(() => { load(); }, []);
 
   return (
     <AppShell>
-      <h1 className="font-display text-3xl text-foreground">Bitkilerim</h1>
+      <h1 className="font-display text-3xl text-foreground">{t("myPlants")}</h1>
       {items === null ? null : items.length === 0 ? (
-        <p className="mt-8 text-center text-muted-foreground">Henüz tarama yok. İlk bitkini tara!</p>
+        <p className="mt-8 text-center text-muted-foreground">{t("noScansYet")}</p>
       ) : (
         <div className="mt-4 grid gap-3">
           {items.map((h) => (
@@ -35,10 +37,10 @@ function HistoryPage() {
                 <div>
                   <p className="font-semibold text-foreground">{h.result.commonName}</p>
                   <p className="text-xs italic text-muted-foreground">{h.result.scientificName}</p>
-                  <p className="text-xs text-muted-foreground">{new Date(h.created_at).toLocaleDateString("tr-TR")}</p>
+                  <p className="text-xs text-muted-foreground">{new Date(h.created_at).toLocaleDateString(lang === "en" ? "en-US" : "tr-TR")}</p>
                 </div>
               </Link>
-              <button aria-label="Sil" onClick={async () => { if (!confirm("Silinsin mi?")) return; await removePlant(h.id); load(); }} className="p-2 text-muted-foreground">
+              <button aria-label={t("delete")} onClick={async () => { if (!confirm(t("deleteConfirm"))) return; await removePlant(h.id); load(); }} className="p-2 text-muted-foreground">
                 <Trash2 className="h-5 w-5" />
               </button>
             </div>

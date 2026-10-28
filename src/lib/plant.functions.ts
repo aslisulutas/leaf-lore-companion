@@ -32,17 +32,27 @@ const schema = {
   },
 };
 
-const prompt = `Sen uzman bir botanikçisin. Fotoğraftaki bitkiyi tanımla ve TÜM alanları TÜRKÇE doldur.
+const promptTr = `Sen uzman bir botanikçisin. Fotoğraftaki bitkiyi tanımla ve TÜM alanları TÜRKÇE doldur.
 - confidence: 0-100 arası tahmini güven yüzdesi.
 - watering: sulama sıklığı ve miktarı (ör. "Haftada 1 kez, toprak kuruyunca").
 - toxicity: evcil hayvanlar ve çocuklar için zehirlilik bilgisi.
 - pests: sık görülen hastalık ve zararlılar.
 Her alan 1-3 kısa cümle olsun. Fotoğrafta bitki yoksa isPlant=false yap ve diğer alanları boş bırak.`;
 
+const promptEn = `You are an expert botanist. Identify the plant in the photo and fill ALL fields in ENGLISH.
+- confidence: estimated confidence percentage between 0-100.
+- watering: watering frequency and amount (e.g. "Once a week, when the soil dries out").
+- toxicity: toxicity information for pets and children.
+- pests: common diseases and pests.
+Keep each field to 1-3 short sentences. If there is no plant in the photo, set isPlant=false and leave the other fields empty.`;
+
 export const identifyPlant = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) =>
-    z.object({ image: z.string().startsWith("data:image/").max(8_000_000) }).parse(input),
+    z.object({
+      image: z.string().startsWith("data:image/").max(8_000_000),
+      lang: z.enum(["tr", "en"]).default("tr"),
+    }).parse(input),
   )
   .handler(async ({ data }): Promise<PlantResult> => {
     const key = process.env['LOVABLE_API_KEY'];
@@ -61,7 +71,7 @@ export const identifyPlant = createServerFn({ method: "POST" })
           {
             role: "user",
             content: [
-              { type: "text", text: prompt },
+              { type: "text", text: data.lang === "en" ? promptEn : promptTr },
               { type: "image_url", image_url: { url: data.image } },
             ],
           },
