@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { AlertTriangle, Bug, Droplets, Flower2, Leaf, Scissors, Sparkles, Sprout, Sun, Thermometer, Wind, Mountain } from "lucide-react";
+import { AlertTriangle, Bug, CircleDot, Droplets, Flower, Flower2, Hourglass, Leaf, Scissors, Sparkles, Sprout, Sun, Thermometer, Wind, Mountain } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { getPlant, removePlant, type PlantRow } from "@/lib/plants-db";
 import { useLang } from "@/lib/i18n";
@@ -49,7 +49,11 @@ function Result() {
     { icon: Sprout, title: t("fertilizing"), text: r.fertilizing },
     { icon: Scissors, title: t("pruning"), text: r.pruning },
     { icon: Flower2, title: t("propagation"), text: r.propagation },
-  ];
+    { icon: Hourglass, title: t("growthTime"), text: r.growthTime },
+    { icon: CircleDot, title: t("bulb"), text: r.bulb },
+    { icon: Flower, title: t("blooming"), text: r.blooming },
+    { icon: Sparkles, title: t("pollen"), text: r.pollen },
+  ].filter((c) => !!c.text);
 
   return (
     <AppShell>
