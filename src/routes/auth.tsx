@@ -11,6 +11,8 @@ export const Route = createFileRoute("/auth")({
       { name: "description", content: "Yeşil Rehber hesabına giriş yap veya ücretsiz kayıt ol." },
       { property: "og:title", content: "Giriş Yap – Yeşil Rehber" },
       { property: "og:description", content: "Yeşil Rehber hesabına giriş yap veya ücretsiz kayıt ol." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: AuthPage,

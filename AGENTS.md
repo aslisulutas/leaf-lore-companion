@@ -10,3 +10,4 @@
 <!-- LOVABLE:END -->
 
 - Plant identification runs in an auth-protected server function (src/lib/plant.functions.ts) via Lovable AI Gateway Gemini; saved plants live in the Cloud `plants` table (RLS per user, thumbnails stored as data URLs), pages under src/routes/_authenticated require sign-in.
+- Legacy plant care is completed on opening a result via an authenticated, owner-scoped server function; fill only missing fields and persist them so existing identification and care content remain unchanged.

@@ -12,6 +12,8 @@ export const Route = createFileRoute("/_authenticated/gecmis")({
       { name: "description", content: "Daha önce tanımladığın bitkiler." },
       { property: "og:title", content: "Geçmiş Taramalar – Yeşil Rehber" },
       { property: "og:description", content: "Daha önce tanımladığın bitkiler." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: HistoryPage,

@@ -1,5 +1,10 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { Loader2, RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { completePlantCare } from "@/lib/plant-enrichment.functions";
+import { missingCareFields } from "@/lib/plant-enrichment";
 import { AlertTriangle, Bug, CircleDot, Droplets, Flower, Flower2, Hourglass, Leaf, Scissors, Sparkles, Sprout, Sun, Thermometer, Wind, Mountain } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { getPlant, removePlant, type PlantRow } from "@/lib/plants-db";
@@ -12,6 +17,8 @@ export const Route = createFileRoute("/_authenticated/sonuc/$id")({
       { name: "description", content: "Tanımlanan bitkinin türü, bakım ve sulama bilgileri." },
       { property: "og:title", content: "Bitki Sonucu – Yeşil Rehber" },
       { property: "og:description", content: "Tanımlanan bitkinin türü, bakım ve sulama bilgileri." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Result,
@@ -21,10 +28,46 @@ function Result() {
   const { id } = Route.useParams();
   const [item, setItem] = useState<PlantRow | null | undefined>(undefined);
   const navigate = useNavigate();
-  const { t } = useLang();
+  const { lang, t } = useLang();
+  const completeCare = useServerFn(completePlantCare);
+  const [completing, setCompleting] = useState(false);
+  const [completionError, setCompletionError] = useState<string | null>(null);
   useEffect(() => {
-    getPlant(id).then(setItem).catch(() => setItem(null));
-  }, [id]);
+    let active = true;
+    setItem(undefined);
+    setCompletionError(null);
+    setCompleting(false);
+    getPlant(id).then(async (plant) => {
+      if (!active) return;
+      setItem(plant);
+      if (!plant || missingCareFields(plant.result).length === 0) return;
+      setCompleting(true);
+      try {
+        const result = await completeCare({ data: { id, lang } });
+        if (active) setItem({ ...plant, result });
+      } catch (error) {
+        if (active) setCompletionError(error instanceof Error ? error.message : "");
+      } finally {
+        if (active) setCompleting(false);
+      }
+    }).catch(() => { if (active) setItem(null); });
+    return () => { active = false; };
+    // Complete once when opening a record; changing the viewing language must not trigger another request.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, completeCare]);
+  async function retryCompletion() {
+    if (!item || completing) return;
+    setCompleting(true);
+    setCompletionError(null);
+    try {
+      const result = await completeCare({ data: { id, lang } });
+      setItem((current) => current?.id === id ? { ...current, result } : current);
+    } catch (error) {
+      setCompletionError(error instanceof Error ? error.message : "");
+    } finally {
+      setCompleting(false);
+    }
+  }
   async function onDelete() {
     if (!confirm(t("deletePlantConfirm"))) return;
     await removePlant(id);
@@ -68,6 +111,12 @@ function Result() {
       </div>
 
       <h2 className="font-display mt-8 text-2xl text-foreground">{t("careGuide")}</h2>
+      {completing && <p role="status" className="mt-3 flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />{t("completingCare")}</p>}
+      {completionError !== null && <div role="alert" className="mt-3 text-sm text-destructive">
+        <p>{t("careCompletionFailed")}</p>
+        {completionError && <p className="mt-1">{completionError}</p>}
+        <Button variant="outline" onClick={retryCompletion} disabled={completing} className="mt-2"><RefreshCw />{t("retryCare")}</Button>
+      </div>}
       <div className="mt-3 grid grid-cols-2 gap-3">
         {cards.map((c) => (
           <div key={c.title} className={`rounded-2xl bg-card p-4 shadow-soft ${c.title === wateringTitle ? "col-span-2 bg-secondary" : ""}`}>

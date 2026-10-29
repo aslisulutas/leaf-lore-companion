@@ -15,6 +15,8 @@ export const Route = createFileRoute("/")({
       { name: "description", content: "Fotoğrafını çek, bitkini tanı, bakım ve sulama bilgilerini öğren." },
       { property: "og:title", content: "Yeşil Rehber – Bitki Tanıma" },
       { property: "og:description", content: "Fotoğrafını çek, bitkini tanı, bakım ve sulama bilgilerini öğren." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Index,
