@@ -1,0 +1,3 @@
+- [ ] Eski kayıtların eksik bakım bilgilerini güvenli şekilde tamamlayıp kaydet.
+- [ ] Güncelleme izinlerini ekle ve sonuç sayfasında tamamlama durumunu göster.
+- [ ] Testleri ve mümkün olan canlı doğrulamayı tamamla.
