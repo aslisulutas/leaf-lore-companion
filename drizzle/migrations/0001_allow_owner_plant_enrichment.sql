@@ -1,0 +1,2 @@
+GRANT UPDATE (result) ON public.plants TO authenticated;
+CREATE POLICY "own update" ON public.plants FOR UPDATE TO authenticated USING ((SELECT auth.uid()) = user_id) WITH CHECK ((SELECT auth.uid()) = user_id);
