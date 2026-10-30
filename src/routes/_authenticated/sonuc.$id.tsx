@@ -142,15 +142,33 @@ function Result() {
 
   return (
     <AppShell>
-      <img src={item.image} alt={r.commonName} className="aspect-square w-full rounded-3xl object-cover shadow-soft" />
-      <div className="mt-5">
-        <span className="rounded-full bg-accent px-3 py-1 text-xs font-semibold text-accent-foreground">
-          %{Math.round(r.confidence)} {t("match")}
-        </span>
-        <h1 className="font-display mt-3 text-4xl text-foreground">{r.commonName}</h1>
-        <p className="italic text-muted-foreground">{r.scientificName} · {r.family}</p>
-        <p className="mt-3 text-sm leading-relaxed text-foreground/80">{r.description}</p>
+      <div className="relative overflow-hidden rounded-3xl shadow-soft">
+        <img src={item.image} alt={r.commonName} className="aspect-[4/5] w-full object-cover" />
+        <div className="absolute inset-x-0 top-0 flex justify-between p-3">
+          <span className="rounded-full bg-card/90 px-3 py-1 text-xs font-semibold text-foreground backdrop-blur">
+            %{Math.round(r.confidence)} {t("match")}
+          </span>
+          <div className="flex gap-2">
+            <button
+              onClick={toggleFavorite}
+              aria-label={item.favorite ? t("unfavorite") : t("favorite")}
+              aria-pressed={item.favorite}
+              className="rounded-full bg-card/90 p-2.5 backdrop-blur"
+            >
+              <Heart className={`h-5 w-5 ${item.favorite ? "fill-destructive text-destructive" : "text-foreground"}`} />
+            </button>
+            <button onClick={onShare} aria-label={t("share")} className="rounded-full bg-card/90 p-2.5 backdrop-blur">
+              {copied ? <Check className="h-5 w-5 text-primary" /> : <Share2 className="h-5 w-5 text-foreground" />}
+            </button>
+          </div>
+        </div>
+        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-foreground/70 to-transparent p-5 pt-16">
+          <h1 className="font-display text-4xl text-primary-foreground drop-shadow">{r.commonName}</h1>
+          <p className="italic text-primary-foreground/90 drop-shadow">{r.scientificName} · {r.family}</p>
+        </div>
       </div>
+      {copied && <p role="status" className="mt-2 text-center text-xs text-primary">{t("linkCopied")}</p>}
+      <p className="mt-4 text-sm leading-relaxed text-foreground/80">{r.description}</p>
 
       <h2 className="font-display mt-8 text-2xl text-foreground">{t("careGuide")}</h2>
       {completing && <p role="status" className="mt-3 flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />{t("completingCare")}</p>}
