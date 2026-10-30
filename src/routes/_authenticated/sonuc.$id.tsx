@@ -32,6 +32,10 @@ function Result() {
   const completeCare = useServerFn(completePlantCare);
   const [completing, setCompleting] = useState(false);
   const [completionError, setCompletionError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+  const [noteDraft, setNoteDraft] = useState("");
+  const [savingNote, setSavingNote] = useState(false);
+  const [noteSaved, setNoteSaved] = useState(false);
   useEffect(() => {
     let active = true;
     setItem(undefined);
@@ -40,6 +44,7 @@ function Result() {
     getPlant(id).then(async (plant) => {
       if (!active) return;
       setItem(plant);
+      setNoteDraft(plant?.note ?? "");
       if (!plant || missingCareFields(plant.result).length === 0) return;
       setCompleting(true);
       try {
