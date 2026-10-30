@@ -1,0 +1,1 @@
+ALTER TABLE public.plants ADD COLUMN IF NOT EXISTS favorite boolean NOT NULL DEFAULT false, ADD COLUMN IF NOT EXISTS note text; GRANT UPDATE (favorite, note) ON public.plants TO authenticated;
