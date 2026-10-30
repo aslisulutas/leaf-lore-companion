@@ -5,9 +5,9 @@ import { Loader2, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { completePlantCare } from "@/lib/plant-enrichment.functions";
 import { missingCareFields } from "@/lib/plant-enrichment";
-import { AlertTriangle, Bug, CircleDot, Droplets, Flower, Flower2, Hourglass, Leaf, Scissors, Sparkles, Sprout, Sun, Thermometer, Wind, Mountain } from "lucide-react";
+import { AlertTriangle, Bug, Check, CircleDot, Droplets, Flower, Flower2, Heart, Hourglass, Leaf, NotebookPen, Scissors, Share2, Sparkles, Sprout, Sun, Thermometer, Wind, Mountain } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
-import { getPlant, removePlant, type PlantRow } from "@/lib/plants-db";
+import { getPlant, removePlant, setFavorite, setNote, type PlantRow } from "@/lib/plants-db";
 import { useLang } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated/sonuc/$id")({
@@ -72,6 +72,43 @@ function Result() {
     if (!confirm(t("deletePlantConfirm"))) return;
     await removePlant(id);
     navigate({ to: "/gecmis" });
+  }
+  async function toggleFavorite() {
+    if (!item) return;
+    const next = !item.favorite;
+    setItem({ ...item, favorite: next });
+    try {
+      await setFavorite(id, next);
+    } catch {
+      setItem((current) => (current?.id === id ? { ...current, favorite: !next } : current));
+    }
+  }
+  async function onShare() {
+    const url = window.location.href;
+    const title = item?.result.commonName ?? t("appName");
+    try {
+      if (navigator.share) {
+        await navigator.share({ title, url });
+        return;
+      }
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      /* user cancelled */
+    }
+  }
+  async function saveNote() {
+    if (!item || savingNote) return;
+    setSavingNote(true);
+    try {
+      await setNote(id, noteDraft);
+      setItem((current) => (current?.id === id ? { ...current, note: noteDraft.trim() || null } : current));
+      setNoteSaved(true);
+      setTimeout(() => setNoteSaved(false), 2000);
+    } finally {
+      setSavingNote(false);
+    }
   }
 
   if (item === undefined) return <AppShell>{null}</AppShell>;
