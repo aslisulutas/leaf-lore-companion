@@ -5,9 +5,9 @@ import { Loader2, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { completePlantCare } from "@/lib/plant-enrichment.functions";
 import { missingCareFields } from "@/lib/plant-enrichment";
-import { AlertTriangle, Bug, CircleDot, Droplets, Flower, Flower2, Hourglass, Leaf, Scissors, Sparkles, Sprout, Sun, Thermometer, Wind, Mountain } from "lucide-react";
+import { AlertTriangle, Bug, Check, CircleDot, Droplets, Flower, Flower2, Heart, Hourglass, Leaf, NotebookPen, Scissors, Share2, Sparkles, Sprout, Sun, Thermometer, Wind, Mountain } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
-import { getPlant, removePlant, type PlantRow } from "@/lib/plants-db";
+import { getPlant, removePlant, setFavorite, setNote, type PlantRow } from "@/lib/plants-db";
 import { useLang } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated/sonuc/$id")({
@@ -32,6 +32,10 @@ function Result() {
   const completeCare = useServerFn(completePlantCare);
   const [completing, setCompleting] = useState(false);
   const [completionError, setCompletionError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+  const [noteDraft, setNoteDraft] = useState("");
+  const [savingNote, setSavingNote] = useState(false);
+  const [noteSaved, setNoteSaved] = useState(false);
   useEffect(() => {
     let active = true;
     setItem(undefined);
@@ -40,6 +44,7 @@ function Result() {
     getPlant(id).then(async (plant) => {
       if (!active) return;
       setItem(plant);
+      setNoteDraft(plant?.note ?? "");
       if (!plant || missingCareFields(plant.result).length === 0) return;
       setCompleting(true);
       try {
@@ -73,6 +78,43 @@ function Result() {
     await removePlant(id);
     navigate({ to: "/gecmis" });
   }
+  async function toggleFavorite() {
+    if (!item) return;
+    const next = !item.favorite;
+    setItem({ ...item, favorite: next });
+    try {
+      await setFavorite(id, next);
+    } catch {
+      setItem((current) => (current?.id === id ? { ...current, favorite: !next } : current));
+    }
+  }
+  async function onShare() {
+    const url = window.location.href;
+    const title = item?.result.commonName ?? t("appName");
+    try {
+      if (navigator.share) {
+        await navigator.share({ title, url });
+        return;
+      }
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      /* user cancelled */
+    }
+  }
+  async function saveNote() {
+    if (!item || savingNote) return;
+    setSavingNote(true);
+    try {
+      await setNote(id, noteDraft);
+      setItem((current) => (current?.id === id ? { ...current, note: noteDraft.trim() || null } : current));
+      setNoteSaved(true);
+      setTimeout(() => setNoteSaved(false), 2000);
+    } finally {
+      setSavingNote(false);
+    }
+  }
 
   if (item === undefined) return <AppShell>{null}</AppShell>;
   if (!item)
@@ -100,15 +142,33 @@ function Result() {
 
   return (
     <AppShell>
-      <img src={item.image} alt={r.commonName} className="aspect-square w-full rounded-3xl object-cover shadow-soft" />
-      <div className="mt-5">
-        <span className="rounded-full bg-accent px-3 py-1 text-xs font-semibold text-accent-foreground">
-          %{Math.round(r.confidence)} {t("match")}
-        </span>
-        <h1 className="font-display mt-3 text-4xl text-foreground">{r.commonName}</h1>
-        <p className="italic text-muted-foreground">{r.scientificName} · {r.family}</p>
-        <p className="mt-3 text-sm leading-relaxed text-foreground/80">{r.description}</p>
+      <div className="relative overflow-hidden rounded-3xl shadow-soft">
+        <img src={item.image} alt={r.commonName} className="aspect-[4/5] w-full object-cover" />
+        <div className="absolute inset-x-0 top-0 flex justify-between p-3">
+          <span className="rounded-full bg-card/90 px-3 py-1 text-xs font-semibold text-foreground backdrop-blur">
+            %{Math.round(r.confidence)} {t("match")}
+          </span>
+          <div className="flex gap-2">
+            <button
+              onClick={toggleFavorite}
+              aria-label={item.favorite ? t("unfavorite") : t("favorite")}
+              aria-pressed={item.favorite}
+              className="rounded-full bg-card/90 p-2.5 backdrop-blur"
+            >
+              <Heart className={`h-5 w-5 ${item.favorite ? "fill-destructive text-destructive" : "text-foreground"}`} />
+            </button>
+            <button onClick={onShare} aria-label={t("share")} className="rounded-full bg-card/90 p-2.5 backdrop-blur">
+              {copied ? <Check className="h-5 w-5 text-primary" /> : <Share2 className="h-5 w-5 text-foreground" />}
+            </button>
+          </div>
+        </div>
+        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-foreground/70 to-transparent p-5 pt-16">
+          <h1 className="font-display text-4xl text-primary-foreground drop-shadow">{r.commonName}</h1>
+          <p className="italic text-primary-foreground/90 drop-shadow">{r.scientificName} · {r.family}</p>
+        </div>
       </div>
+      {copied && <p role="status" className="mt-2 text-center text-xs text-primary">{t("linkCopied")}</p>}
+      <p className="mt-4 text-sm leading-relaxed text-foreground/80">{r.description}</p>
 
       <h2 className="font-display mt-8 text-2xl text-foreground">{t("careGuide")}</h2>
       {completing && <p role="status" className="mt-3 flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />{t("completingCare")}</p>}
@@ -118,19 +178,43 @@ function Result() {
         <Button variant="outline" onClick={retryCompletion} disabled={completing} className="mt-2"><RefreshCw />{t("retryCare")}</Button>
       </div>}
       <div className="mt-3 grid grid-cols-2 gap-3">
-        {cards.map((c) => (
-          <div key={c.title} className={`rounded-2xl bg-card p-4 shadow-soft ${c.title === wateringTitle ? "col-span-2 bg-secondary" : ""}`}>
-            <c.icon className="h-5 w-5 text-primary" />
-            <h3 className="mt-2 text-sm font-semibold text-foreground">{c.title}</h3>
-            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{c.text}</p>
-          </div>
-        ))}
+        {cards.map((c) => {
+          const isWatering = c.title === wateringTitle;
+          return (
+            <div key={c.title} className={`rounded-2xl bg-card p-4 shadow-soft ${isWatering ? "col-span-2 bg-secondary" : ""}`}>
+              <span className={`inline-flex rounded-xl p-2 ${isWatering ? "bg-card" : "bg-secondary"}`}>
+                <c.icon className="h-5 w-5 text-primary" />
+              </span>
+              <h3 className="mt-2 text-sm font-semibold text-foreground">{c.title}</h3>
+              <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{c.text}</p>
+            </div>
+          );
+        })}
       </div>
 
       <div className="mt-4 grid gap-3">
         <Info icon={AlertTriangle} title={t("toxicity")} text={r.toxicity} warn />
         <Info icon={Bug} title={t("pests")} text={r.pests} />
         <Info icon={Sparkles} title={t("funFact")} text={r.funFact} />
+      </div>
+
+      <div className="mt-4 rounded-2xl bg-card p-4 shadow-soft">
+        <h3 className="flex items-center gap-2 text-sm font-semibold text-foreground">
+          <NotebookPen className="h-5 w-5 text-primary" /> {t("myNote")}
+        </h3>
+        <textarea
+          value={noteDraft}
+          onChange={(e) => setNoteDraft(e.target.value)}
+          placeholder={t("notePlaceholder")}
+          rows={3}
+          className="mt-2 w-full resize-none rounded-xl border border-border bg-background p-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+        />
+        <div className="mt-2 flex items-center gap-3">
+          <Button onClick={saveNote} disabled={savingNote} size="sm">
+            {savingNote && <Loader2 className="animate-spin" />} {t("saveNote")}
+          </Button>
+          {noteSaved && <span role="status" className="flex items-center gap-1 text-xs text-primary"><Check className="h-4 w-4" />{t("noteSaved")}</span>}
+        </div>
       </div>
 
       <Link to="/" className="mt-8 flex items-center justify-center gap-2 rounded-2xl bg-primary py-4 font-semibold text-primary-foreground">

@@ -15,6 +15,13 @@
       "when": 1793261217715,
       "tag": "0001_allow_owner_plant_enrichment",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793340291155,
+      "tag": "0002_plants_favorite_note",
+      "breakpoints": true
     }
   ]
 }
