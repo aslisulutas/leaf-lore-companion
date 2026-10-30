@@ -178,19 +178,43 @@ function Result() {
         <Button variant="outline" onClick={retryCompletion} disabled={completing} className="mt-2"><RefreshCw />{t("retryCare")}</Button>
       </div>}
       <div className="mt-3 grid grid-cols-2 gap-3">
-        {cards.map((c) => (
-          <div key={c.title} className={`rounded-2xl bg-card p-4 shadow-soft ${c.title === wateringTitle ? "col-span-2 bg-secondary" : ""}`}>
-            <c.icon className="h-5 w-5 text-primary" />
-            <h3 className="mt-2 text-sm font-semibold text-foreground">{c.title}</h3>
-            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{c.text}</p>
-          </div>
-        ))}
+        {cards.map((c) => {
+          const isWatering = c.title === wateringTitle;
+          return (
+            <div key={c.title} className={`rounded-2xl bg-card p-4 shadow-soft ${isWatering ? "col-span-2 bg-secondary" : ""}`}>
+              <span className={`inline-flex rounded-xl p-2 ${isWatering ? "bg-card" : "bg-secondary"}`}>
+                <c.icon className="h-5 w-5 text-primary" />
+              </span>
+              <h3 className="mt-2 text-sm font-semibold text-foreground">{c.title}</h3>
+              <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{c.text}</p>
+            </div>
+          );
+        })}
       </div>
 
       <div className="mt-4 grid gap-3">
         <Info icon={AlertTriangle} title={t("toxicity")} text={r.toxicity} warn />
         <Info icon={Bug} title={t("pests")} text={r.pests} />
         <Info icon={Sparkles} title={t("funFact")} text={r.funFact} />
+      </div>
+
+      <div className="mt-4 rounded-2xl bg-card p-4 shadow-soft">
+        <h3 className="flex items-center gap-2 text-sm font-semibold text-foreground">
+          <NotebookPen className="h-5 w-5 text-primary" /> {t("myNote")}
+        </h3>
+        <textarea
+          value={noteDraft}
+          onChange={(e) => setNoteDraft(e.target.value)}
+          placeholder={t("notePlaceholder")}
+          rows={3}
+          className="mt-2 w-full resize-none rounded-xl border border-border bg-background p-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+        />
+        <div className="mt-2 flex items-center gap-3">
+          <Button onClick={saveNote} disabled={savingNote} size="sm">
+            {savingNote && <Loader2 className="animate-spin" />} {t("saveNote")}
+          </Button>
+          {noteSaved && <span role="status" className="flex items-center gap-1 text-xs text-primary"><Check className="h-4 w-4" />{t("noteSaved")}</span>}
+        </div>
       </div>
 
       <Link to="/" className="mt-8 flex items-center justify-center gap-2 rounded-2xl bg-primary py-4 font-semibold text-primary-foreground">
