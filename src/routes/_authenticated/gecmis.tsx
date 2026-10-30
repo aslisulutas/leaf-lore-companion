@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Trash2 } from "lucide-react";
+import { Heart, Trash2 } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { listPlants, removePlant, type PlantRow } from "@/lib/plants-db";
 import { useLang } from "@/lib/i18n";
@@ -37,7 +37,10 @@ function HistoryPage() {
               <Link to="/sonuc/$id" params={{ id: h.id }} className="flex flex-1 items-center gap-3">
                 <img src={h.image} alt={h.result.commonName} className="h-16 w-16 rounded-xl object-cover" />
                 <div>
-                  <p className="font-semibold text-foreground">{h.result.commonName}</p>
+                  <p className="flex items-center gap-1.5 font-semibold text-foreground">
+                    {h.result.commonName}
+                    {h.favorite && <Heart className="h-3.5 w-3.5 fill-destructive text-destructive" />}
+                  </p>
                   <p className="text-xs italic text-muted-foreground">{h.result.scientificName}</p>
                   <p className="text-xs text-muted-foreground">{new Date(h.created_at).toLocaleDateString(lang === "en" ? "en-US" : "tr-TR")}</p>
                 </div>
