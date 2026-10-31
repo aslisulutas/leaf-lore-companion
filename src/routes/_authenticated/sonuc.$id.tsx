@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Loader2, RefreshCw } from "lucide-react";
+import { Loader2, RefreshCw, BookOpenCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { completePlantCare } from "@/lib/plant-enrichment.functions";
 import { missingCareFields } from "@/lib/plant-enrichment";
@@ -169,6 +169,9 @@ function Result() {
       </div>
       {copied && <p role="status" className="mt-2 text-center text-xs text-primary">{t("linkCopied")}</p>}
       <p className="mt-4 text-sm leading-relaxed text-foreground/80">{r.description}</p>
+      <Button asChild variant="outline" className="mt-4 w-full">
+        <Link to="/dogrula/$id" params={{ id }}><BookOpenCheck />{t("verifyPlant")}</Link>
+      </Button>
 
       <h2 className="font-display mt-8 text-2xl text-foreground">{t("careGuide")}</h2>
       {completing && <p role="status" className="mt-3 flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />{t("completingCare")}</p>}
