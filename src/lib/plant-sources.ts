@@ -27,5 +27,5 @@ export function plantSources(scientificName: string) {
       url: "https://www.aspca.org/pet-care/animal-poison-control/toxic-and-non-toxic-plants",
       action: "toxicityDirectory" as TKey,
     },
-  ];
+  ] as const;
 }
