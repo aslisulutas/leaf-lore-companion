@@ -1,5 +1,5 @@
 - [x] Eski kayıtların eksik bakım bilgilerini güvenli şekilde tamamlayıp kaydet.
 - [x] Güncelleme izinlerini ekle ve sonuç sayfasında tamamlama durumunu göster.
 - [x] Testleri ve mümkün olan canlı doğrulamayı tamamla: 9 test başarılı, Gemini bilgileri doğrulandı; mevcut hesap/kayıt bulunmadığından kayıt üzerinden uçtan uca doğrulama yapılamadı.
-- [ ] Bitki sonuçlarından erişilen çok kaynaklı doğrulama sayfasını ekle.
-- [ ] Kaynak bağlantılarını ve kayıt üzerinden doğrulama akışını kontrol et.
+- [x] Bitki sonuçlarından erişilen çok kaynaklı doğrulama sayfasını ekle.
+- [x] Kaynak bağlantıları, kayıtlı şakayık üzerinden sayfaya geçiş/dönüş, TR/EN ve mobil görünüm kontrol edildi; 12 test geçti.
