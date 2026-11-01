@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { addPlant } from "@/lib/plants-db";
+import { addPlant, verifyAndSave } from "@/lib/plants-db";
 import { Camera, ImageUp, Loader2, Sprout } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { identifyPlant } from "@/lib/plant.functions";
@@ -52,6 +52,7 @@ function Index() {
       }
       const thumb = await resizeImage(file, 480, 0.75);
       const id = await addPlant(thumb, result);
+      await verifyAndSave(id, result, lang).catch(() => null);
       navigate({ to: "/sonuc/$id", params: { id } });
     } catch (e) {
       setError(e instanceof Error ? e.message : t("genericError"));
