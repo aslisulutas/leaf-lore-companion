@@ -7,7 +7,7 @@ import { completePlantCare } from "@/lib/plant-enrichment.functions";
 import { missingCareFields } from "@/lib/plant-enrichment";
 import { AlertTriangle, Bug, Check, CircleDot, Droplets, Flower, Flower2, Heart, Hourglass, Leaf, NotebookPen, Scissors, Share2, Sparkles, Sprout, Sun, Thermometer, Wind, Mountain } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
-import { getPlant, removePlant, setFavorite, setNote, type PlantRow } from "@/lib/plants-db";
+import { verifyAndSave, getPlant, removePlant, setFavorite, setNote, type PlantRow } from "@/lib/plants-db";
 import { useLang } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated/sonuc/$id")({
@@ -32,6 +32,7 @@ function Result() {
   const completeCare = useServerFn(completePlantCare);
   const [completing, setCompleting] = useState(false);
   const [completionError, setCompletionError] = useState<string | null>(null);
+  const [verifying, setVerifying] = useState(false);
   const [copied, setCopied] = useState(false);
   const [noteDraft, setNoteDraft] = useState("");
   const [savingNote, setSavingNote] = useState(false);
@@ -45,6 +46,12 @@ function Result() {
       if (!active) return;
       setItem(plant);
       setNoteDraft(plant?.note ?? "");
+      if (plant && !plant.verification) {
+        setVerifying(true);
+        verifyAndSave(id, plant.result, lang)
+          .then((verification) => { if (active) setItem((c) => c?.id === id ? { ...c, verification } : c); })
+          .catch(() => null).finally(() => { if (active) setVerifying(false); });
+      }
       if (!plant || missingCareFields(plant.result).length === 0) return;
       setCompleting(true);
       try {
@@ -172,6 +179,25 @@ function Result() {
       <Button asChild variant="outline" className="mt-4 w-full">
         <Link to="/dogrula/$id" params={{ id }}><BookOpenCheck />{t("verifyPlant")}</Link>
       </Button>
+      {verifying && <p role="status" className="mt-3 flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />{t("checkingSources")}</p>}
+      {item.verification && (item.verification.gbif || item.verification.wiki) && (
+        <section className="mt-4 rounded-2xl border border-border bg-card p-4">
+          <h2 className="font-display flex items-center gap-2 text-xl text-foreground"><BookOpenCheck className="h-5 w-5 text-primary" />{t("fromSources")}</h2>
+          {item.verification.gbif && (
+            <dl className="mt-3 space-y-2 text-sm">
+              <div className="flex justify-between gap-3"><dt className="text-muted-foreground">{t("gbifName")}</dt>
+                <dd className="text-right italic">{item.verification.gbif.canonicalName} <span className={item.verification.gbif.nameStatus === "match" ? "text-primary" : "text-destructive"}>· {t(item.verification.gbif.nameStatus === "match" ? "cmpMatch" : item.verification.gbif.nameStatus === "differs" ? "cmpDiffers" : "cmpNotFound")}</span></dd></div>
+              {item.verification.gbif.family && <div className="flex justify-between gap-3"><dt className="text-muted-foreground">{t("family")}</dt>
+                <dd className="text-right">{item.verification.gbif.family} <span className={item.verification.gbif.familyStatus === "match" ? "text-primary" : "text-destructive"}>· {t(item.verification.gbif.familyStatus === "match" ? "cmpMatch" : item.verification.gbif.familyStatus === "differs" ? "cmpDiffers" : "cmpNotFound")}</span></dd></div>}
+            </dl>
+          )}
+          {item.verification.wiki && <div className="mt-3 text-sm">
+            <p className="text-foreground/80">{item.verification.wiki.extract}</p>
+            <a href={item.verification.wiki.url} target="_blank" rel="noopener noreferrer" className="mt-1 inline-block text-primary underline">Wikipedia ({item.verification.wiki.lang.toUpperCase()})</a>
+          </div>}
+          <p className="mt-3 text-xs text-muted-foreground">{t("fromSourcesNote")}</p>
+        </section>
+      )}
 
       <h2 className="font-display mt-8 text-2xl text-foreground">{t("careGuide")}</h2>
       {completing && <p role="status" className="mt-3 flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />{t("completingCare")}</p>}
