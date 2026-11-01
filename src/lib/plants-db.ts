@@ -3,7 +3,7 @@ import type { PlantResult } from "./plant-types";
 
 export type PlantRow = { id: string; image: string; result: PlantResult; created_at: string; favorite: boolean; note: string | null; verification: PlantVerification | null };
 
-export type PlantVerification = { checkedAt: string; gbif: { canonicalName?: string; family?: string; status?: string; usageKey?: number; nameStatus: string; familyStatus: string } | null; wiki: { extract: string; url: string; lang: string } | null };
+export type PlantVerification = { checkedAt: string; gbif: { canonicalName?: string | undefined; family?: string | undefined; status?: string | undefined; usageKey?: number | undefined; nameStatus: string; familyStatus: string } | null; wiki: { extract: string; url: string; lang: string } | null };
 
 const COLS = "id, image, result, created_at, favorite, note, verification";
 
