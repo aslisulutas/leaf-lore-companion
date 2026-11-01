@@ -22,6 +22,13 @@
       "when": 1793340291155,
       "tag": "0002_plants_favorite_note",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1793555396050,
+      "tag": "0003_plants_verification",
+      "breakpoints": true
     }
   ]
 }

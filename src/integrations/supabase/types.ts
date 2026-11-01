@@ -23,6 +23,7 @@ export type Database = {
           note: string | null
           result: Json
           user_id: string
+          verification: Json | null
         }
         Insert: {
           created_at?: string
@@ -32,6 +33,7 @@ export type Database = {
           note?: string | null
           result: Json
           user_id?: string
+          verification?: Json | null
         }
         Update: {
           created_at?: string
@@ -41,6 +43,7 @@ export type Database = {
           note?: string | null
           result?: Json
           user_id?: string
+          verification?: Json | null
         }
         Relationships: []
       }
