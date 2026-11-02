@@ -14,36 +14,83 @@ export type Database = {
   }
   public: {
     Tables: {
+      plant_logs: {
+        Row: {
+          created_at: string
+          id: string
+          image: string | null
+          kind: string
+          note: string | null
+          plant_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          image?: string | null
+          kind: string
+          note?: string | null
+          plant_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          image?: string | null
+          kind?: string
+          note?: string | null
+          plant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "plant_logs_plant_id_fkey"
+            columns: ["plant_id"]
+            isOneToOne: false
+            referencedRelation: "plants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       plants: {
         Row: {
           created_at: string
           favorite: boolean
+          fertilizer_interval_days: number | null
           id: string
           image: string
+          last_fertilized_at: string | null
+          last_watered_at: string | null
           note: string | null
           result: Json
           user_id: string
           verification: Json | null
+          water_interval_days: number | null
         }
         Insert: {
           created_at?: string
           favorite?: boolean
+          fertilizer_interval_days?: number | null
           id?: string
           image: string
+          last_fertilized_at?: string | null
+          last_watered_at?: string | null
           note?: string | null
           result: Json
           user_id?: string
           verification?: Json | null
+          water_interval_days?: number | null
         }
         Update: {
           created_at?: string
           favorite?: boolean
+          fertilizer_interval_days?: number | null
           id?: string
           image?: string
+          last_fertilized_at?: string | null
+          last_watered_at?: string | null
           note?: string | null
           result?: Json
           user_id?: string
           verification?: Json | null
+          water_interval_days?: number | null
         }
         Relationships: []
       }
