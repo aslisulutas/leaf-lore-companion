@@ -49,7 +49,7 @@ function wrap(ctx: CanvasRenderingContext2D, text: string, maxWidth: number, max
   }
   if (lines.length < maxLines && line) lines.push(line);
   if (lines.length === maxLines && words.join(" ") !== lines.join(" ")) {
-    const last = lines[maxLines - 1];
+    const last = lines[maxLines - 1] ?? "";
     lines[maxLines - 1] = `${last.slice(0, Math.max(0, last.length - 1))}…`;
   }
   return lines;

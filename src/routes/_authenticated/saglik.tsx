@@ -10,9 +10,10 @@ import { resizeImage } from "@/lib/plant-types";
 import { useLang } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated/saglik")({
-  validateSearch: (search: Record<string, unknown>): { plant?: string } => ({
-    plant: typeof search.plant === "string" && search.plant ? search.plant : undefined,
-  }),
+  validateSearch: (search: Record<string, unknown>): { plant?: string } => {
+    const plant = search["plant"];
+    return typeof plant === "string" && plant ? { plant } : {};
+  },
   head: () => ({
     meta: [
       { title: "Bitki Sağlığı – Yeşil Rehber" },
@@ -32,6 +33,14 @@ const SEV_STYLE: Record<HealthResult["severity"], string> = {
   moderate: "bg-accent text-accent-foreground",
   severe: "bg-destructive/10 text-destructive",
   unknown: "bg-muted text-muted-foreground",
+};
+
+const SEV_KEY: Record<HealthResult["severity"], "sevHealthy" | "sevMinor" | "sevModerate" | "sevSevere" | "sevUnknown"> = {
+  healthy: "sevHealthy",
+  minor: "sevMinor",
+  moderate: "sevModerate",
+  severe: "sevSevere",
+  unknown: "sevUnknown",
 };
 
 function HealthPage() {
@@ -79,7 +88,7 @@ function HealthPage() {
   async function saveToJournal() {
     if (!result || !target || !photo) return;
     const note = [
-      sevKey ? `${t("healthTitle")}: ${t(sevKey)}` : t("healthTitle"),
+      `${t("healthTitle")}: ${t(SEV_KEY[result.severity])}`,
       result.summary,
       ...result.conditions.map((c) => `${c.name} (${c.likelihood})`),
     ]
@@ -89,7 +98,7 @@ function HealthPage() {
     setSaved(true);
   }
 
-  const sevKey = result ? (`sev${result.severity[0].toUpperCase()}${result.severity.slice(1)}` as "sevHealthy") : null;
+  const sevKey = result ? SEV_KEY[result.severity] : null;
 
   return (
     <AppShell>
@@ -205,7 +214,7 @@ function HealthPage() {
 }
 
 function dataUrlToFile(dataUrl: string): File {
-  const [head, body] = dataUrl.split(",");
+  const [head = "", body = ""] = dataUrl.split(",");
   const mime = head.match(/:(.*?);/)?.[1] ?? "image/jpeg";
   const bin = atob(body);
   const bytes = new Uint8Array(bin.length);
