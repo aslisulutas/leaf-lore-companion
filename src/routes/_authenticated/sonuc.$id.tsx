@@ -3,11 +3,13 @@ import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { Loader2, RefreshCw, BookOpenCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { completePlantCare } from "@/lib/plant-enrichment.functions";
 import { missingCareFields } from "@/lib/plant-enrichment";
-import { AlertTriangle, Bug, Check, CircleDot, Droplets, Flower, Flower2, Heart, Hourglass, Leaf, NotebookPen, Scissors, Share2, Sparkles, Sprout, Sun, Thermometer, Wind, Mountain } from "lucide-react";
+import { AlertTriangle, Bug, CalendarClock, Check, CircleDot, Droplets, Flower, Flower2, Heart, Hourglass, ImageUp, Leaf, NotebookPen, Scissors, Share2, Sparkles, Sprout, Stethoscope, Sun, Thermometer, Wind, Mountain } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
-import { verifyAndSave, getPlant, removePlant, setFavorite, setNote, type PlantRow } from "@/lib/plants-db";
+import { markCare, setSchedule, verifyAndSave, getPlant, removePlant, setFavorite, setNote, type PlantRow } from "@/lib/plants-db";
+import { dueInfo, type DueInfo } from "@/lib/plant-schedule";
 import { useLang } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated/sonuc/$id")({
@@ -24,6 +26,8 @@ export const Route = createFileRoute("/_authenticated/sonuc/$id")({
   component: Result,
 });
 
+const INTERVALS = [3, 5, 7, 10, 14, 21, 30];
+
 function Result() {
   const { id } = Route.useParams();
   const [item, setItem] = useState<PlantRow | null | undefined>(undefined);
@@ -37,6 +41,10 @@ function Result() {
   const [noteDraft, setNoteDraft] = useState("");
   const [savingNote, setSavingNote] = useState(false);
   const [noteSaved, setNoteSaved] = useState(false);
+  const [card, setCard] = useState<{ blob: Blob; url: string } | null>(null);
+  const [cardBusy, setCardBusy] = useState(false);
+  const [cardError, setCardError] = useState<string | null>(null);
+  const [careBusy, setCareBusy] = useState(false);
   useEffect(() => {
     let active = true;
     setItem(undefined);
@@ -122,6 +130,55 @@ function Result() {
       setSavingNote(false);
     }
   }
+  async function chooseInterval(kind: "water" | "fertilize", days: number | null) {
+    if (!item) return;
+    const patch = kind === "water" ? { water_interval_days: days } : { fertilizer_interval_days: days };
+    setItem({ ...item, ...patch });
+    try {
+      await setSchedule(id, patch);
+    } catch {
+      setItem(item);
+    }
+  }
+  async function markDone(kind: "water" | "fertilize") {
+    if (!item || careBusy) return;
+    setCareBusy(true);
+    try {
+      await markCare(id, kind);
+      const at = new Date().toISOString();
+      setItem((current) => (current?.id === id ? { ...current, ...(kind === "water" ? { last_watered_at: at } : { last_fertilized_at: at }) } : current));
+    } finally {
+      setCareBusy(false);
+    }
+  }
+  async function makeCard() {
+    if (!item || cardBusy) return;
+    setCardBusy(true);
+    setCardError(null);
+    try {
+      const { renderPlantCard } = await import("@/lib/plant-card");
+      const r = item.result;
+      const blob = await renderPlantCard({
+        image: item.image,
+        commonName: r.commonName,
+        scientificName: r.scientificName,
+        family: r.family,
+        confidence: r.confidence,
+        facts: [
+          { label: t("watering"), value: r.watering },
+          { label: t("light"), value: r.light },
+          { label: t("blooming"), value: r.blooming },
+        ].filter((f) => !!f.value),
+        appName: t("appName"),
+        footer: t("cardTitle"),
+      });
+      setCard({ blob, url: URL.createObjectURL(blob) });
+    } catch {
+      setCardError(t("cardFailed"));
+    } finally {
+      setCardBusy(false);
+    }
+  }
 
   if (item === undefined) return <AppShell>{null}</AppShell>;
   if (!item)
@@ -199,6 +256,36 @@ function Result() {
         </section>
       )}
 
+      <section className="mt-8 rounded-2xl bg-card p-4 shadow-soft">
+        <h2 className="font-display flex items-center gap-2 text-xl text-foreground"><CalendarClock className="h-5 w-5 text-primary" />{t("careSchedule")}</h2>
+        <div className="mt-3 grid gap-5">
+          <ScheduleBlock
+            title={t("waterEvery")}
+            due={dueInfo(item, "water")}
+            interval={item.water_interval_days}
+            lastLabel={t("lastWatered")}
+            lastAt={item.last_watered_at}
+            markLabel={t("markWatered")}
+            lang={lang}
+            disabled={careBusy}
+            onInterval={(days) => chooseInterval("water", days)}
+            onMark={() => markDone("water")}
+          />
+          <ScheduleBlock
+            title={t("fertilizeEvery")}
+            due={dueInfo(item, "fertilize")}
+            interval={item.fertilizer_interval_days}
+            lastLabel={t("lastFertilized")}
+            lastAt={item.last_fertilized_at}
+            markLabel={t("markFertilized")}
+            lang={lang}
+            disabled={careBusy}
+            onInterval={(days) => chooseInterval("fertilize", days)}
+            onMark={() => markDone("fertilize")}
+          />
+        </div>
+      </section>
+
       <h2 className="font-display mt-8 text-2xl text-foreground">{t("careGuide")}</h2>
       {completing && <p role="status" className="mt-3 flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />{t("completingCare")}</p>}
       {completionError !== null && <div role="alert" className="mt-3 text-sm text-destructive">
@@ -227,6 +314,15 @@ function Result() {
         <Info icon={Sparkles} title={t("funFact")} text={r.funFact} />
       </div>
 
+      <div className="mt-4 grid grid-cols-2 gap-3">
+        <Link to="/gunluk/$id" params={{ id }} className="flex flex-col items-center gap-2 rounded-2xl bg-card p-4 text-sm font-semibold text-foreground shadow-soft">
+          <NotebookPen className="h-5 w-5 text-primary" /> {t("journal")}
+        </Link>
+        <Link to="/saglik" search={{ plant: id }} className="flex flex-col items-center gap-2 rounded-2xl bg-card p-4 text-sm font-semibold text-foreground shadow-soft">
+          <Stethoscope className="h-5 w-5 text-primary" /> {t("healthCheck")}
+        </Link>
+      </div>
+
       <div className="mt-4 rounded-2xl bg-card p-4 shadow-soft">
         <h3 className="flex items-center gap-2 text-sm font-semibold text-foreground">
           <NotebookPen className="h-5 w-5 text-primary" /> {t("myNote")}
@@ -246,6 +342,45 @@ function Result() {
         </div>
       </div>
 
+      <Button variant="outline" onClick={makeCard} disabled={cardBusy} className="mt-4 w-full">
+        {cardBusy ? <Loader2 className="animate-spin" /> : <ImageUp />} {t("makeCard")}
+      </Button>
+      {cardError && <p role="alert" className="mt-2 text-sm text-destructive">{cardError}</p>}
+
+      <Dialog open={!!card} onOpenChange={(open) => { if (!open && card) { URL.revokeObjectURL(card.url); setCard(null); } }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t("cardTitle")}</DialogTitle>
+            <DialogDescription className="text-xs">{t("cardHint")}</DialogDescription>
+          </DialogHeader>
+          {card && <img src={card.url} alt={t("cardTitle")} className="w-full rounded-2xl" />}
+          {card && (
+            <div className="flex gap-2">
+              <Button
+                className="flex-1"
+                onClick={async () => {
+                  const { downloadBlob } = await import("@/lib/plant-card");
+                  downloadBlob(card.blob, `${r.commonName}.png`);
+                }}
+              >
+                {t("downloadCard")}
+              </Button>
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={async () => {
+                  const { downloadBlob, shareBlob } = await import("@/lib/plant-card");
+                  const shared = await shareBlob(card.blob, `${r.commonName}.png`, r.commonName).catch(() => false);
+                  if (!shared) downloadBlob(card.blob, `${r.commonName}.png`);
+                }}
+              >
+                <Share2 /> {t("shareCard")}
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
       <Link to="/" className="mt-8 flex items-center justify-center gap-2 rounded-2xl bg-primary py-4 font-semibold text-primary-foreground">
         <Leaf className="h-5 w-5" /> {t("scanNewPlant")}
       </Link>
@@ -253,6 +388,67 @@ function Result() {
         {t("deletePlant")}
       </button>
     </AppShell>
+  );
+}
+
+function ScheduleBlock({
+  title, due, interval, lastLabel, lastAt, markLabel, lang, disabled, onInterval, onMark,
+}: {
+  title: string;
+  due: DueInfo;
+  interval: number | null;
+  lastLabel: string;
+  lastAt: string | null;
+  markLabel: string;
+  lang: "tr" | "en";
+  disabled: boolean;
+  onInterval: (days: number | null) => void;
+  onMark: () => void;
+}) {
+  const { t } = useLang();
+  const label =
+    due.state === "none" ? t("noSchedule")
+      : due.state === "due" ? t("dueToday")
+        : due.state === "overdue" ? `${due.days} ${t("daysOverdue")}`
+          : `${due.days} ${t("daysLeft")}`;
+  const tone =
+    due.state === "overdue" ? "bg-destructive/10 text-destructive"
+      : due.state === "due" ? "bg-primary/10 text-primary"
+        : "bg-muted text-muted-foreground";
+  return (
+    <div>
+      <div className="flex items-center justify-between gap-3">
+        <h3 className="text-sm font-semibold text-foreground">{title}</h3>
+        <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${tone}`}>{label}</span>
+      </div>
+      <div className="mt-2 flex flex-wrap gap-1.5">
+        {INTERVALS.map((days) => (
+          <button
+            key={days}
+            onClick={() => onInterval(days)}
+            aria-pressed={interval === days}
+            className={`rounded-full px-3 py-1.5 text-xs font-semibold ${interval === days ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"}`}
+          >
+            {days} {t("daysUnit")}
+          </button>
+        ))}
+        <button
+          onClick={() => onInterval(null)}
+          aria-pressed={interval === null}
+          className={`rounded-full px-3 py-1.5 text-xs font-semibold ${interval === null ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"}`}
+        >
+          {t("noSchedule")}
+        </button>
+      </div>
+      <div className="mt-2 flex items-center justify-between gap-3">
+        <p className="text-xs text-muted-foreground">
+          {lastAt
+            ? `${lastLabel}: ${new Date(lastAt).toLocaleDateString(lang === "en" ? "en-US" : "tr-TR")}`
+            : t("noSchedule")}
+        </p>
+        <Button size="sm" onClick={onMark} disabled={disabled || due.state === "none"}>{markLabel}</Button>
+      </div>
+    </div>
   );
 }
 

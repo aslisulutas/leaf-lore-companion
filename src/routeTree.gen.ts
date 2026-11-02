@@ -13,7 +13,9 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedGecmisRouteImport } from './routes/_authenticated/gecmis'
+import { Route as AuthenticatedSaglikRouteImport } from './routes/_authenticated/saglik'
 import { Route as AuthenticatedDogrulaIdRouteImport } from './routes/_authenticated/dogrula.$id'
+import { Route as AuthenticatedGunlukIdRouteImport } from './routes/_authenticated/gunluk.$id'
 import { Route as AuthenticatedSonucIdRouteImport } from './routes/_authenticated/sonuc.$id'
 
 const IndexRoute = IndexRouteImport.update({
@@ -35,9 +37,19 @@ const AuthenticatedGecmisRoute = AuthenticatedGecmisRouteImport.update({
   path: '/gecmis',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedSaglikRoute = AuthenticatedSaglikRouteImport.update({
+  id: '/saglik',
+  path: '/saglik',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedDogrulaIdRoute = AuthenticatedDogrulaIdRouteImport.update({
   id: '/dogrula/$id',
   path: '/dogrula/$id',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedGunlukIdRoute = AuthenticatedGunlukIdRouteImport.update({
+  id: '/gunluk/$id',
+  path: '/gunluk/$id',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedSonucIdRoute = AuthenticatedSonucIdRouteImport.update({
@@ -50,14 +62,18 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/gecmis': typeof AuthenticatedGecmisRoute
+  '/saglik': typeof AuthenticatedSaglikRoute
   '/dogrula/$id': typeof AuthenticatedDogrulaIdRoute
+  '/gunluk/$id': typeof AuthenticatedGunlukIdRoute
   '/sonuc/$id': typeof AuthenticatedSonucIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/gecmis': typeof AuthenticatedGecmisRoute
+  '/saglik': typeof AuthenticatedSaglikRoute
   '/dogrula/$id': typeof AuthenticatedDogrulaIdRoute
+  '/gunluk/$id': typeof AuthenticatedGunlukIdRoute
   '/sonuc/$id': typeof AuthenticatedSonucIdRoute
 }
 export interface FileRoutesById {
@@ -66,21 +82,39 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/_authenticated/gecmis': typeof AuthenticatedGecmisRoute
+  '/_authenticated/saglik': typeof AuthenticatedSaglikRoute
   '/_authenticated/dogrula/$id': typeof AuthenticatedDogrulaIdRoute
+  '/_authenticated/gunluk/$id': typeof AuthenticatedGunlukIdRoute
   '/_authenticated/sonuc/$id': typeof AuthenticatedSonucIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/gecmis' | '/dogrula/$id' | '/sonuc/$id'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/gecmis'
+    | '/saglik'
+    | '/dogrula/$id'
+    | '/gunluk/$id'
+    | '/sonuc/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/gecmis' | '/dogrula/$id' | '/sonuc/$id'
+  to:
+    | '/'
+    | '/auth'
+    | '/gecmis'
+    | '/saglik'
+    | '/dogrula/$id'
+    | '/gunluk/$id'
+    | '/sonuc/$id'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
     | '/_authenticated/gecmis'
+    | '/_authenticated/saglik'
     | '/_authenticated/dogrula/$id'
+    | '/_authenticated/gunluk/$id'
     | '/_authenticated/sonuc/$id'
   fileRoutesById: FileRoutesById
 }
@@ -120,11 +154,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedGecmisRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/saglik': {
+      id: '/_authenticated/saglik'
+      path: '/saglik'
+      fullPath: '/saglik'
+      preLoaderRoute: typeof AuthenticatedSaglikRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/dogrula/$id': {
       id: '/_authenticated/dogrula/$id'
       path: '/dogrula/$id'
       fullPath: '/dogrula/$id'
       preLoaderRoute: typeof AuthenticatedDogrulaIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/gunluk/$id': {
+      id: '/_authenticated/gunluk/$id'
+      path: '/gunluk/$id'
+      fullPath: '/gunluk/$id'
+      preLoaderRoute: typeof AuthenticatedGunlukIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/sonuc/$id': {
@@ -139,13 +187,17 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedGecmisRoute: typeof AuthenticatedGecmisRoute
+  AuthenticatedSaglikRoute: typeof AuthenticatedSaglikRoute
   AuthenticatedDogrulaIdRoute: typeof AuthenticatedDogrulaIdRoute
+  AuthenticatedGunlukIdRoute: typeof AuthenticatedGunlukIdRoute
   AuthenticatedSonucIdRoute: typeof AuthenticatedSonucIdRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedGecmisRoute: AuthenticatedGecmisRoute,
+  AuthenticatedSaglikRoute: AuthenticatedSaglikRoute,
   AuthenticatedDogrulaIdRoute: AuthenticatedDogrulaIdRoute,
+  AuthenticatedGunlukIdRoute: AuthenticatedGunlukIdRoute,
   AuthenticatedSonucIdRoute: AuthenticatedSonucIdRoute,
 }
 
