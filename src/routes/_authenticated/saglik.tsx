@@ -193,7 +193,6 @@ function HealthPage() {
                 <NotebookPen /> {t("saveToJournal")}
               </Button>
               {saved && <span role="status" className="text-xs text-primary">{t("healthSaved")}</span>}
-              </Button>
             </div>
           )}
           <Link to="/" className="mt-2 flex items-center justify-center gap-2 rounded-2xl bg-primary py-4 font-semibold text-primary-foreground">
