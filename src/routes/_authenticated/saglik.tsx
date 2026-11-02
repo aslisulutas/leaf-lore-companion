@@ -79,7 +79,7 @@ function HealthPage() {
   async function saveToJournal() {
     if (!result || !target || !photo) return;
     const note = [
-      `${t("healthTitle")}: ${t(`sev${result.severity[0].toUpperCase()}${result.severity.slice(1)}` as never)}`,
+      sevKey ? `${t("healthTitle")}: ${t(sevKey)}` : t("healthTitle"),
       result.summary,
       ...result.conditions.map((c) => `${c.name} (${c.likelihood})`),
     ]
@@ -189,8 +189,10 @@ function HealthPage() {
 
           {plants.length > 0 && (
             <div className="flex items-center gap-3">
-              <Button onClick={saveToJournal} disabled={!target || saved}>
-                <NotebookPen /> {saved ? t("healthSaved") : t("healthSaved")}
+              <Button onClick={saveToJournal} disabled={!target || saved || busy}>
+                <NotebookPen /> {t("saveToJournal")}
+              </Button>
+              {saved && <span role="status" className="text-xs text-primary">{t("healthSaved")}</span>}
               </Button>
             </div>
           )}
