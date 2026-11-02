@@ -52,6 +52,9 @@ export function AppShell({ children }: { children: ReactNode }) {
         <Link to="/gecmis" className="flex flex-col items-center gap-1 text-xs text-muted-foreground" activeProps={{ className: "text-primary" }}>
           <History className="h-6 w-6" /> {t("history")}
         </Link>
+        <Link to="/saglik" className="flex flex-col items-center gap-1 text-xs text-muted-foreground" activeProps={{ className: "text-primary" }}>
+          <Stethoscope className="h-6 w-6" /> {t("health")}
+        </Link>
       </nav>
     </div>
   );
