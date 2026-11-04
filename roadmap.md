@@ -3,3 +3,4 @@
 - [x] Testleri ve mümkün olan canlı doğrulamayı tamamla: 9 test başarılı, Gemini bilgileri doğrulandı; mevcut hesap/kayıt bulunmadığından kayıt üzerinden uçtan uca doğrulama yapılamadı.
 - [x] Bitki sonuçlarından erişilen çok kaynaklı doğrulama sayfasını ekle.
 - [x] Kaynak bağlantıları, kayıtlı şakayık üzerinden sayfaya geçiş/dönüş, TR/EN ve mobil görünüm kontrol edildi; 12 test geçti.
+- [x] Hastalık teşhisi giriş yapılmış hesapta PlantVillage domates erken yanıklık fotoğrafıyla denendi: mantar kaynaklı yaprak lekesi olasılığı döndü, kesin hastalık etkeni doğrulanmadı. Sonuç, günlüğe kayıt/okuma/silme, bitki olmayan fotoğrafın İngilizce reddi ve 822×634 görünüm kontrol edildi; dört AI isteği başarılı, 20 test geçti. Deneme günlüğü silindi, mevcut bitki bilgileri değiştirilmedi.
