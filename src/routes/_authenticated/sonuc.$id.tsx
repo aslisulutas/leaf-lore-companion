@@ -444,9 +444,9 @@ function ScheduleBlock({
         <p className="text-xs text-muted-foreground">
           {lastAt
             ? `${lastLabel}: ${new Date(lastAt).toLocaleDateString(lang === "en" ? "en-US" : "tr-TR")}`
-            : t("noSchedule")}
+            : t("notDoneYet")}
         </p>
-        <Button size="sm" onClick={onMark} disabled={disabled || due.state === "none"}>{markLabel}</Button>
+        <Button size="sm" onClick={onMark} disabled={disabled}>{markLabel}</Button>
       </div>
     </div>
   );

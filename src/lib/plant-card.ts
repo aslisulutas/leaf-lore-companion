@@ -86,12 +86,12 @@ export async function renderPlantCard(data: CardData): Promise<Blob> {
   ctx.drawImage(img, (W - dw) / 2, (H - dh) / 2, dw, dh);
 
   // Readability gradient over the lower half.
-  const grad = ctx.createLinearGradient(0, H * 0.42, 0, H);
+  const grad = ctx.createLinearGradient(0, H * 0.32, 0, H);
   grad.addColorStop(0, "rgba(20,32,24,0)");
-  grad.addColorStop(0.55, "rgba(20,32,24,0.72)");
+  grad.addColorStop(0.35, "rgba(20,32,24,0.8)");
   grad.addColorStop(1, "rgba(16,26,20,0.95)");
   ctx.fillStyle = grad;
-  ctx.fillRect(0, H * 0.42, W, H * 0.58);
+  ctx.fillRect(0, H * 0.32, W, H * 0.68);
 
   const pad = 76;
   let y = H - 76;
